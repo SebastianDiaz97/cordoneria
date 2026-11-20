@@ -4,9 +4,11 @@ import { toast } from 'sonner'
 import { createCustomer } from '@/services/customers'
 import { createRepairOrder } from '@/services/repairs'
 import type { Customer, ServiceCatalogItem } from '@/types'
-import { PAYMENT_METHODS, type PaymentMethod } from '@/types'
-import { formatCurrency, parseDecimal, PAYMENT_METHOD_LABELS } from '@/lib/format'
-import { Badge } from '@/components/ui/Badge'
+import { type PaymentMethod } from '@/types'
+import { formatCurrency, parseDecimal } from '@/lib/format'
+// import { PAYMENT_METHODS, type PaymentMethod } from '@/types'
+// import { formatCurrency, parseDecimal, PAYMENT_METHOD_LABELS } from '@/lib/format'
+// import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Field, Input, Select, Textarea } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
@@ -72,10 +74,13 @@ export function NewOrderModal({
 }) {
   const [customerId, setCustomerId] = useState('')
   const [extraCustomers, setExtraCustomers] = useState<Customer[]>([])
-  const [notes, setNotes] = useState('')
   const [garments, setGarments] = useState<GarmentDraft[]>(() => [newGarment()])
-  const [deposit, setDeposit] = useState('0')
-  const [depositMethod, setDepositMethod] = useState<PaymentMethod>('cash')
+  const [notes] = useState('')
+  const [deposit] = useState('0')
+  const [depositMethod] = useState<PaymentMethod>('cash')
+  // const [notes, setNotes] = useState('')
+  // const [deposit, setDeposit] = useState('0')
+  // const [depositMethod, setDepositMethod] = useState<PaymentMethod>('cash')
   const [saving, setSaving] = useState(false)
 
   const [showNewCustomer, setShowNewCustomer] = useState(false)
@@ -117,24 +122,31 @@ export function NewOrderModal({
 
   function serviceLineTotal(service: ServiceDraft) {
     const catalog = services.find((item) => item.id === service.serviceId)
-    const price = service.unitPrice !== '' ? Number(service.unitPrice) : catalog?.default_price ?? 0
+    const price =
+      service.unitPrice !== ''
+        ? Number(service.unitPrice)
+        : (catalog?.default_price ?? 0)
     return parseDecimal(service.quantity) * (price || 0)
   }
 
   const orderTotal = garments.reduce(
     (total, garment) =>
-      total + garment.services.reduce((sum, service) => sum + serviceLineTotal(service), 0),
+      total +
+      garment.services.reduce(
+        (sum, service) => sum + serviceLineTotal(service),
+        0,
+      ),
     0,
   )
   const depositTendered = Number(deposit) || 0
-  const depositApplied =
-    depositMethod === 'cash'
-      ? Math.min(depositTendered, orderTotal)
-      : depositTendered
-  const depositChange =
-    depositMethod === 'cash'
-      ? Math.max(depositTendered - orderTotal, 0)
-      : 0
+  // const depositApplied =
+  //   depositMethod === 'cash'
+  //     ? Math.min(depositTendered, orderTotal)
+  //     : depositTendered
+  // const depositChange =
+  //   depositMethod === 'cash'
+  //     ? Math.max(depositTendered - orderTotal, 0)
+  //     : 0
 
   async function createQuickCustomer() {
     if (!newCustomer.full_name.trim()) {
@@ -157,7 +169,9 @@ export function NewOrderModal({
       setNewCustomer({ full_name: '', phone: '', whatsapp: '' })
       toast.success('Cliente creado')
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'No se pudo crear el cliente')
+      toast.error(
+        error instanceof Error ? error.message : 'No se pudo crear el cliente',
+      )
     } finally {
       setCreatingCustomer(false)
     }
@@ -215,12 +229,19 @@ export function NewOrderModal({
             : null,
           storage_terms_accepted: garment.storage_terms_accepted,
           services: garment.services
-            .filter((service) => service.serviceId || service.description.trim())
+            .filter(
+              (service) => service.serviceId || service.description.trim(),
+            )
             .map((service) => ({
               service_id: service.serviceId || null,
-              description: service.serviceId ? null : service.description.trim(),
+              description: service.serviceId
+                ? null
+                : service.description.trim(),
               quantity: parseDecimal(service.quantity) || 1,
-              unit_price: service.unitPrice !== '' ? Number(service.unitPrice) : undefined,
+              unit_price:
+                service.unitPrice !== ''
+                  ? Number(service.unitPrice)
+                  : undefined,
             })),
         })),
       })
@@ -228,7 +249,9 @@ export function NewOrderModal({
       onCreated(orderId)
       onClose()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'No se pudo crear la orden')
+      toast.error(
+        error instanceof Error ? error.message : 'No se pudo crear la orden',
+      )
     } finally {
       setSaving(false)
     }
@@ -238,15 +261,18 @@ export function NewOrderModal({
     <Modal
       open={open}
       onClose={onClose}
-      title='Nueva orden de arreglo'
-      description='Una orden puede incluir varias prendas, cada una con su precio y seguimiento.'
-      size='xl'
+      title="Nueva orden de arreglo"
+      description="Una orden puede incluir varias prendas, cada una con su precio y seguimiento."
+      size="xl"
       footer={
         <>
-          <span className='mr-auto text-sm text-text-secondary'>
-            Total orden: <strong className='text-text-primary'>{formatCurrency(orderTotal)}</strong>
+          <span className="mr-auto text-sm text-text-secondary">
+            Total orden:{' '}
+            <strong className="text-text-primary">
+              {formatCurrency(orderTotal)}
+            </strong>
           </span>
-          <Button variant='outline' onClick={onClose}>
+          <Button variant="outline" onClick={onClose}>
             Cancelar
           </Button>
           <Button loading={saving} onClick={submit}>
@@ -255,15 +281,15 @@ export function NewOrderModal({
         </>
       }
     >
-      <div className='flex flex-col gap-4'>
-        <div className='rounded-lg border border-border p-3'>
-          <div className='flex flex-wrap items-end gap-2'>
-            <Field label='Cliente' className='min-w-52 flex-1'>
+      <div className="flex flex-col gap-4">
+        <div className="rounded-lg border border-border p-3">
+          <div className="flex flex-wrap items-end gap-2">
+            <Field label="Cliente" className="min-w-52 flex-1">
               <Select
                 value={customerId}
                 onChange={(event) => setCustomerId(event.target.value)}
               >
-                <option value=''>Seleccionar cliente…</option>
+                <option value="">Seleccionar cliente…</option>
                 {allCustomers.map((customer) => (
                   <option key={customer.id} value={customer.id}>
                     {customer.full_name}
@@ -273,17 +299,17 @@ export function NewOrderModal({
               </Select>
             </Field>
             <Button
-              variant='outline'
-              size='md'
+              variant="outline"
+              size="md"
               onClick={() => setShowNewCustomer((value) => !value)}
             >
-              <UserPlus className='h-4 w-4' /> Nuevo cliente
+              <UserPlus className="h-4 w-4" /> Nuevo cliente
             </Button>
           </div>
 
           {showNewCustomer ? (
-            <div className='mt-3 grid gap-2 rounded-lg bg-muted/50 p-3 sm:grid-cols-[1.5fr_1fr_1fr_auto]'>
-              <Field label='Nombre'>
+            <div className="mt-3 grid gap-2 rounded-lg bg-muted/50 p-3 sm:grid-cols-[1.5fr_1fr_1fr_auto]">
+              <Field label="Nombre">
                 <Input
                   value={newCustomer.full_name}
                   onChange={(event) =>
@@ -294,7 +320,7 @@ export function NewOrderModal({
                   }
                 />
               </Field>
-              <Field label='Teléfono'>
+              <Field label="Teléfono">
                 <Input
                   value={newCustomer.phone}
                   onChange={(event) =>
@@ -305,7 +331,7 @@ export function NewOrderModal({
                   }
                 />
               </Field>
-              <Field label='WhatsApp'>
+              <Field label="WhatsApp">
                 <Input
                   value={newCustomer.whatsapp}
                   onChange={(event) =>
@@ -316,9 +342,9 @@ export function NewOrderModal({
                   }
                 />
               </Field>
-              <div className='flex items-end'>
+              <div className="flex items-end">
                 <Button
-                  size='md'
+                  size="md"
                   loading={creatingCustomer}
                   onClick={createQuickCustomer}
                 >
@@ -332,36 +358,38 @@ export function NewOrderModal({
         {garments.map((garment, index) => (
           <div
             key={garment.key}
-            className='rounded-lg border border-border p-3'
+            className="rounded-lg border border-border p-3"
           >
-            <div className='mb-2 flex items-center justify-between'>
-              <h3 className='text-sm font-semibold'>Prenda {index + 1}</h3>
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="text-sm font-semibold">Prenda {index + 1}</h3>
               {garments.length > 1 ? (
                 <Button
-                  variant='ghost'
-                  size='icon'
+                  variant="ghost"
+                  size="icon"
                   onClick={() =>
                     setGarments((current) =>
                       current.filter((item) => item.key !== garment.key),
                     )
                   }
                 >
-                  <Trash2 className='h-4 w-4 text-danger' />
+                  <Trash2 className="h-4 w-4 text-danger" />
                 </Button>
               ) : null}
             </div>
 
-            <div className='grid gap-2 sm:grid-cols-3'>
-              <Field label='Tipo de prenda'>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <Field label="Tipo de prenda">
                 <Input
                   value={garment.garment_type}
                   onChange={(event) =>
-                    updateGarment(garment.key, { garment_type: event.target.value })
+                    updateGarment(garment.key, {
+                      garment_type: event.target.value,
+                    })
                   }
-                  placeholder='Pantalón, vestido…'
+                  placeholder="Pantalón, vestido…"
                 />
               </Field>
-              <Field label='Color'>
+              <Field label="Color">
                 <Input
                   value={garment.color}
                   onChange={(event) =>
@@ -369,9 +397,9 @@ export function NewOrderModal({
                   }
                 />
               </Field>
-              <Field label='Fecha estimada de entrega'>
+              <Field label="Fecha estimada de entrega">
                 <Input
-                  type='datetime-local'
+                  type="datetime-local"
                   value={garment.estimated_ready_at}
                   onChange={(event) =>
                     updateGarment(garment.key, {
@@ -380,62 +408,70 @@ export function NewOrderModal({
                   }
                 />
               </Field>
-              <Field label='Descripción' className='sm:col-span-3'>
+              <Field label="Descripción" className="sm:col-span-3">
                 <Input
                   value={garment.description}
                   onChange={(event) =>
-                    updateGarment(garment.key, { description: event.target.value })
+                    updateGarment(garment.key, {
+                      description: event.target.value,
+                    })
                   }
-                  placeholder='Características de la prenda'
+                  placeholder="Características de la prenda"
                 />
               </Field>
-              <Field label='Condición al recibir' className='sm:col-span-3'>
+              <Field label="Condición al recibir" className="sm:col-span-3">
                 <Input
                   value={garment.condition}
                   onChange={(event) =>
-                    updateGarment(garment.key, { condition: event.target.value })
+                    updateGarment(garment.key, {
+                      condition: event.target.value,
+                    })
                   }
-                  placeholder='Manchas, roturas, botones faltantes…'
+                  placeholder="Manchas, roturas, botones faltantes…"
                 />
               </Field>
-              <Field label='Trabajo solicitado' className='sm:col-span-3'>
+              <Field label="Trabajo solicitado" className="sm:col-span-3">
                 <Textarea
-                  className='min-h-14'
+                  className="min-h-14"
                   value={garment.requested_work}
                   onChange={(event) =>
-                    updateGarment(garment.key, { requested_work: event.target.value })
+                    updateGarment(garment.key, {
+                      requested_work: event.target.value,
+                    })
                   }
-                  placeholder='Qué debe hacer el arreglo'
+                  placeholder="Qué debe hacer el arreglo"
                 />
               </Field>
-              <Field label='Notas internas' className='sm:col-span-3'>
+              <Field label="Notas internas" className="sm:col-span-3">
                 <Input
                   value={garment.internal_notes}
                   onChange={(event) =>
-                    updateGarment(garment.key, { internal_notes: event.target.value })
+                    updateGarment(garment.key, {
+                      internal_notes: event.target.value,
+                    })
                   }
                 />
               </Field>
             </div>
 
-            <div className='mt-3'>
-              <div className='mb-1 flex items-center justify-between'>
-                <p className='text-xs font-semibold uppercase text-text-secondary'>
+            <div className="mt-3">
+              <div className="mb-1 flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase text-text-secondary">
                   Servicios
                 </p>
                 <Button
-                  variant='outline'
-                  size='sm'
+                  variant="outline"
+                  size="sm"
                   onClick={() =>
                     updateGarment(garment.key, {
                       services: [...garment.services, newService()],
                     })
                   }
                 >
-                  <Plus className='h-3.5 w-3.5' /> Servicio
+                  <Plus className="h-3.5 w-3.5" /> Servicio
                 </Button>
               </div>
-              <div className='flex flex-col gap-2'>
+              <div className="flex flex-col gap-2">
                 {garment.services.map((service) => {
                   const catalogItem = services.find(
                     (item) => item.id === service.serviceId,
@@ -443,9 +479,9 @@ export function NewOrderModal({
                   return (
                     <div
                       key={service.key}
-                      className='grid gap-2 rounded-lg bg-muted/40 p-2 sm:grid-cols-[1.5fr_1fr_1fr_1fr_auto]'
+                      className="grid gap-2 rounded-lg bg-muted/40 p-2 sm:grid-cols-[1.5fr_1fr_1fr_1fr_auto]"
                     >
-                      <Field label='Servicio del catálogo'>
+                      <Field label="Servicio del catálogo">
                         <Select
                           value={service.serviceId}
                           onChange={(event) => {
@@ -454,11 +490,13 @@ export function NewOrderModal({
                             )
                             updateService(garment.key, service.key, {
                               serviceId: event.target.value,
-                              unitPrice: selected ? String(selected.default_price) : '',
+                              unitPrice: selected
+                                ? String(selected.default_price)
+                                : '',
                             })
                           }}
                         >
-                          <option value=''>Personalizado</option>
+                          <option value="">Personalizado</option>
                           {services.map((item) => (
                             <option key={item.id} value={item.id}>
                               {item.name}
@@ -466,11 +504,11 @@ export function NewOrderModal({
                           ))}
                         </Select>
                       </Field>
-                      <Field label='Descripción'>
+                      <Field label="Descripción">
                         <Input
                           value={
                             service.serviceId
-                              ? catalogItem?.name ?? ''
+                              ? (catalogItem?.name ?? '')
                               : service.description
                           }
                           disabled={Boolean(service.serviceId)}
@@ -479,13 +517,13 @@ export function NewOrderModal({
                               description: event.target.value,
                             })
                           }
-                          placeholder='Detalle'
+                          placeholder="Detalle"
                         />
                       </Field>
-                      <Field label='Cantidad'>
+                      <Field label="Cantidad">
                         <Input
-                          type='text'
-                          inputMode='decimal'
+                          type="text"
+                          inputMode="decimal"
                           value={service.quantity}
                           onChange={(event) =>
                             updateService(garment.key, service.key, {
@@ -494,9 +532,9 @@ export function NewOrderModal({
                           }
                         />
                       </Field>
-                      <Field label='Precio unitario'>
+                      <Field label="Precio unitario">
                         <Input
-                          type='number'
+                          type="number"
                           min={0}
                           value={service.unitPrice}
                           onChange={(event) =>
@@ -506,14 +544,14 @@ export function NewOrderModal({
                           }
                         />
                       </Field>
-                      <div className='flex items-end justify-end gap-1'>
-                        <span className='pb-2 text-xs font-medium'>
+                      <div className="flex items-end justify-end gap-1">
+                        <span className="pb-2 text-xs font-medium">
                           {formatCurrency(serviceLineTotal(service))}
                         </span>
                         {garment.services.length > 1 ? (
                           <Button
-                            variant='ghost'
-                            size='icon'
+                            variant="ghost"
+                            size="icon"
                             onClick={() =>
                               updateGarment(garment.key, {
                                 services: garment.services.filter(
@@ -522,7 +560,7 @@ export function NewOrderModal({
                               })
                             }
                           >
-                            <Trash2 className='h-4 w-4 text-danger' />
+                            <Trash2 className="h-4 w-4 text-danger" />
                           </Button>
                         ) : null}
                       </div>
@@ -532,10 +570,10 @@ export function NewOrderModal({
               </div>
             </div>
 
-            <label className='mt-3 flex items-start gap-2 text-xs text-text-secondary'>
+            <label className="mt-3 flex items-start gap-2 text-xs text-text-secondary">
               <input
-                type='checkbox'
-                className='mt-0.5 h-4 w-4 accent-primary'
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 accent-primary"
                 checked={garment.storage_terms_accepted}
                 onChange={(event) =>
                   updateGarment(garment.key, {
@@ -550,14 +588,14 @@ export function NewOrderModal({
         ))}
 
         <Button
-          variant='outline'
-          className='self-start'
+          variant="outline"
+          className="self-start"
           onClick={() => setGarments((current) => [...current, newGarment()])}
         >
-          <Plus className='h-4 w-4' /> Agregar prenda
+          <Plus className="h-4 w-4" /> Agregar prenda
         </Button>
 
-        <div className='grid gap-2 rounded-lg border border-border p-3 sm:grid-cols-3'>
+        {/* <div className='grid gap-2 rounded-lg border border-border p-3 sm:grid-cols-3'>
           <Field label='Abono inicial (opcional)'>
             <Input
               type='number'
@@ -600,7 +638,7 @@ export function NewOrderModal({
               Se repartirá entre las prendas en proporción a su precio
             </Badge>
           ) : null}
-        </div>
+        </div> */}
       </div>
     </Modal>
   )

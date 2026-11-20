@@ -92,20 +92,22 @@ function PaymentDraftsEditor({
   )
 
   return (
-    <div className='flex flex-col gap-2'>
-      <div className='flex items-center justify-between'>
-        <p className='font-medium'>Pagos</p>
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <p className="font-medium">Pagos</p>
         <Button
-          variant='outline'
-          size='sm'
-          onClick={() => setDrafts((current) => [...current, newPaymentDraft()])}
+          variant="outline"
+          size="sm"
+          onClick={() =>
+            setDrafts((current) => [...current, newPaymentDraft()])
+          }
         >
-          <Plus className='h-3.5 w-3.5' /> Método
+          <Plus className="h-3.5 w-3.5" /> Método
         </Button>
       </div>
       {drafts.map((payment) => (
-        <div key={payment.key} className='flex flex-wrap items-end gap-2'>
-          <Field label='Método' className='w-32'>
+        <div key={payment.key} className="flex flex-wrap items-end gap-2">
+          <Field label="Método" className="w-32">
             <Select
               value={payment.method}
               onChange={(event) =>
@@ -128,9 +130,9 @@ function PaymentDraftsEditor({
               ))}
             </Select>
           </Field>
-          <Field label='Monto' className='w-28'>
+          <Field label="Monto" className="w-28">
             <Input
-              type='number'
+              type="number"
               min={0}
               value={payment.amount}
               onChange={(event) =>
@@ -144,7 +146,7 @@ function PaymentDraftsEditor({
               }
             />
           </Field>
-          <Field label='Referencia' className='min-w-28 flex-1'>
+          <Field label="Referencia" className="min-w-28 flex-1">
             <Input
               value={payment.reference}
               onChange={(event) =>
@@ -159,8 +161,8 @@ function PaymentDraftsEditor({
             />
           </Field>
           <Button
-            variant='ghost'
-            size='sm'
+            variant="ghost"
+            size="sm"
             onClick={() =>
               setDrafts((current) =>
                 current.map((item) =>
@@ -180,21 +182,21 @@ function PaymentDraftsEditor({
           </Button>
           {drafts.length > 1 ? (
             <Button
-              variant='ghost'
-              size='icon'
+              variant="ghost"
+              size="icon"
               onClick={() =>
                 setDrafts((current) =>
                   current.filter((item) => item.key !== payment.key),
                 )
               }
             >
-              <Trash2 className='h-4 w-4 text-danger' />
+              <Trash2 className="h-4 w-4 text-danger" />
             </Button>
           ) : null}
         </div>
       ))}
       {summary.nonCashExcess > 0 ? (
-        <p className='text-xs text-danger'>
+        <p className="text-xs text-danger">
           El pago con métodos distintos de efectivo no puede superar el saldo.
         </p>
       ) : null}
@@ -206,7 +208,7 @@ function PaymentDraftsEditor({
         Recibido {formatCurrency(summary.tendered)} de {formatCurrency(due)}
       </p>
       {summary.change > 0 ? (
-        <p className='text-xs font-medium text-success'>
+        <p className="text-xs font-medium text-success">
           Vuelto: {formatCurrency(summary.change)}
         </p>
       ) : null}
@@ -230,12 +232,16 @@ export default function ArregloDetalle() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash')
   const [paymentReference, setPaymentReference] = useState('')
 
-  const [materialTarget, setMaterialTarget] = useState<RepairGarment | null>(null)
+  const [materialTarget, setMaterialTarget] = useState<RepairGarment | null>(
+    null,
+  )
   const [materialProduct, setMaterialProduct] = useState('')
   const [materialQuantity, setMaterialQuantity] = useState('1')
   const [materialNotes, setMaterialNotes] = useState('')
 
-  const [servicesTarget, setServicesTarget] = useState<RepairGarment | null>(null)
+  const [servicesTarget, setServicesTarget] = useState<RepairGarment | null>(
+    null,
+  )
   const [serviceDrafts, setServiceDrafts] = useState<ServiceDraft[]>([])
 
   const [deliverTarget, setDeliverTarget] = useState<RepairGarment | null>(null)
@@ -266,8 +272,9 @@ export default function ArregloDetalle() {
   const [refundMethod, setRefundMethod] = useState<PaymentMethod>('cash')
 
   const [notifyTarget, setNotifyTarget] = useState<RepairGarment | null>(null)
-  const [notifyMethod, setNotifyMethod] =
-    useState<'whatsapp' | 'phone_call' | 'in_person' | 'other'>('whatsapp')
+  const [notifyMethod, setNotifyMethod] = useState<
+    'whatsapp' | 'phone_call' | 'in_person' | 'other'
+  >('whatsapp')
   const [notifyResult, setNotifyResult] = useState('contacted')
   const [notifyNotes, setNotifyNotes] = useState('')
 
@@ -302,14 +309,16 @@ export default function ArregloDetalle() {
         if (active) setStoragePreview(preview)
       })
       .catch((err: unknown) =>
-        toast.error(err instanceof Error ? err.message : 'Error al calcular guarda'),
+        toast.error(
+          err instanceof Error ? err.message : 'Error al calcular guarda',
+        ),
       )
     return () => {
       active = false
     }
   }, [deliverTarget])
 
-  if (loading) return <LoadingBlock label='Cargando orden…' />
+  if (loading) return <LoadingBlock label="Cargando orden…" />
   if (error) return <ErrorBlock message={error} onRetry={reload} />
   if (!data) return null
 
@@ -332,7 +341,9 @@ export default function ArregloDetalle() {
       toast.success('Estado actualizado')
       reload()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'No se pudo cambiar el estado')
+      toast.error(
+        err instanceof Error ? err.message : 'No se pudo cambiar el estado',
+      )
     }
   }
 
@@ -452,13 +463,12 @@ export default function ArregloDetalle() {
 
   const deliverPaid = deliverTarget ? paidFor(deliverTarget.id) : 0
   const deliverFee =
-    deliverTarget && storagePreview
-      ? waiveFee
-        ? 0
-        : storagePreview.fee
-      : 0
+    deliverTarget && storagePreview ? (waiveFee ? 0 : storagePreview.fee) : 0
   const deliverDue = deliverTarget
-    ? Math.max(Number(deliverTarget.service_price) - deliverPaid + deliverFee, 0)
+    ? Math.max(
+        Number(deliverTarget.service_price) - deliverPaid + deliverFee,
+        0,
+      )
     : 0
   const deliverSummary = summarizeTender(
     deliverPayments.map((payment) => ({
@@ -505,9 +515,7 @@ export default function ArregloDetalle() {
       ? Math.min(paymentTendered, paymentBalance)
       : paymentTendered
   const paymentChange =
-    paymentMethod === 'cash'
-      ? Math.max(paymentTendered - paymentBalance, 0)
-      : 0
+    paymentMethod === 'cash' ? Math.max(paymentTendered - paymentBalance, 0) : 0
 
   function adjustBulkPayment(previousDue: number, nextDue: number) {
     setBulkPayments((current) => {
@@ -587,7 +595,9 @@ export default function ArregloDetalle() {
       }
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : 'No se pudieron calcular los saldos',
+        err instanceof Error
+          ? err.message
+          : 'No se pudieron calcular los saldos',
       )
     } finally {
       setBulkLoading(false)
@@ -623,10 +633,10 @@ export default function ArregloDetalle() {
         })),
         bulkDue,
       ).map((payment) => ({
-          method: payment.method,
-          reference: payment.reference,
-          remaining: payment.amount,
-        }))
+        method: payment.method,
+        reference: payment.reference,
+        remaining: payment.amount,
+      }))
 
       for (const garment of bulkGarments) {
         const due = bulkDueFor(garment)
@@ -639,7 +649,8 @@ export default function ArregloDetalle() {
 
         for (const pool of pools) {
           if (remainingDue <= 0.001) break
-          const amount = Math.round(Math.min(remainingDue, pool.remaining) * 100) / 100
+          const amount =
+            Math.round(Math.min(remainingDue, pool.remaining) * 100) / 100
           if (amount <= 0) continue
           garmentPayments.push({
             amount,
@@ -798,23 +809,30 @@ export default function ArregloDetalle() {
     }
   }
 
+  let paid = 0
+  garments.map((garment) => {
+    // console.log(paymentsByGarment.get(garment.id)?.[0]?.amount)
+    paid = paid + (paymentsByGarment.get(garment.id)?.[0]?.amount ?? 0)
+    // console.log(paid);
+  })
+
   return (
     <div>
       <Link
-        to='/arreglos'
-        className='mb-2 inline-flex items-center gap-1 text-sm text-text-secondary hover:text-text-primary'
+        to="/arreglos"
+        className="mb-2 inline-flex items-center gap-1 text-sm text-text-secondary hover:text-text-primary"
       >
-        <ArrowLeft className='h-4 w-4' /> Volver a arreglos
+        <ArrowLeft className="h-4 w-4" /> Volver a arreglos
       </Link>
 
       <PageHeader
         title={`Orden #${order.order_number}`}
         description={`${order.customers?.full_name ?? 'Cliente'} · recibida ${formatDate(order.received_at)}`}
         actions={
-          <div className='flex flex-wrap items-center gap-2'>
+          <div className="flex flex-wrap items-center gap-2">
             {readyGarments.length >= 2 ? (
-              <Button size='sm' onClick={openBulkDeliver}>
-                <PackageCheck className='h-4 w-4' /> Entrega conjunta
+              <Button size="sm" onClick={openBulkDeliver}>
+                <PackageCheck className="h-4 w-4" /> Entrega conjunta
               </Button>
             ) : null}
             <Badge tone={statusTone(order.status)}>
@@ -824,35 +842,50 @@ export default function ArregloDetalle() {
         }
       />
 
-      <div className='mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4'>
-        <div className='rounded-xl border border-border bg-surface p-3 text-sm shadow-soft'>
-          <p className='text-xs uppercase text-text-secondary'>Cliente</p>
-          <p className='mt-1 font-medium'>{order.customers?.full_name ?? '—'}</p>
-          <p className='text-xs text-text-secondary'>
-            {order.customers?.phone ?? order.customers?.whatsapp ?? 'Sin teléfono'}
+      <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="rounded-xl border border-border bg-surface p-3 text-sm shadow-soft">
+          <p className="text-xs uppercase text-text-secondary">Cliente</p>
+          <p className="mt-1 font-medium">
+            {order.customers?.full_name ?? '—'}
+          </p>
+          <p className="text-xs text-text-secondary">
+            {order.customers?.phone ??
+              order.customers?.whatsapp ??
+              'Sin teléfono'}
           </p>
         </div>
-        <div className='rounded-xl border border-border bg-surface p-3 text-sm shadow-soft'>
-          <p className='text-xs uppercase text-text-secondary'>Prendas</p>
-          <p className='mt-1 font-medium'>{garments.length}</p>
-          <p className='text-xs text-text-secondary'>
-            {garments.filter((garment) => garment.status === 'ready').length} listas
+        <div className="rounded-xl border border-border bg-surface p-3 text-sm shadow-soft">
+          <p className="text-xs uppercase text-text-secondary">Prendas</p>
+          <p className="mt-1 font-medium">{garments.length}</p>
+          <p className="text-xs text-text-secondary">
+            {garments.filter((garment) => garment.status === 'ready').length}{' '}
+            listas
           </p>
         </div>
-        <div className='rounded-xl border border-border bg-surface p-3 text-sm shadow-soft'>
-          <p className='text-xs uppercase text-text-secondary'>Total orden</p>
-          <p className='mt-1 font-medium'>{formatCurrency(order.total)}</p>
-          <p className='text-xs text-text-secondary'>
+        <div className="rounded-xl border border-border bg-surface p-3 text-sm shadow-soft">
+          <p className="text-xs uppercase text-text-secondary">Total orden</p>
+          <p className="mt-1 font-medium">{formatCurrency(order.total)}</p>
+          <p className="text-xs text-text-secondary">
             Servicios {formatCurrency(order.subtotal)}
           </p>
         </div>
-        <div className='rounded-xl border border-border bg-surface p-3 text-sm shadow-soft'>
-          <p className='text-xs uppercase text-text-secondary'>Notas</p>
-          <p className='mt-1 line-clamp-2 text-xs'>{order.notes ?? 'Sin notas'}</p>
+        <div className="rounded-xl border border-border bg-surface p-3 text-sm shadow-soft">
+          <p className="text-xs uppercase text-text-secondary">abono</p>
+          <p className="mt-1 font-medium">{formatCurrency(paid)}</p>
+
+          <p className="text-xs text-text-secondary">
+            Por Pagar {formatCurrency(order.subtotal-paid)}
+          </p>
+        </div>
+        <div className="rounded-xl border border-border bg-surface p-3 text-sm shadow-soft">
+          <p className="text-xs uppercase text-text-secondary">Notas</p>
+          <p className="mt-1 line-clamp-2 text-xs">
+            {order.notes ?? 'Sin notas'}
+          </p>
         </div>
       </div>
 
-      <div className='flex flex-col gap-3'>
+      <div className="flex flex-col gap-3">
         {garments.map((garment) => (
           <GarmentCard
             key={garment.id}
@@ -896,9 +929,9 @@ export default function ArregloDetalle() {
       </div>
 
       {data.photos.length > 0 ? (
-        <div className='mt-4 rounded-xl border border-border bg-surface p-4 text-sm shadow-soft'>
-          <p className='font-medium'>Fotografías registradas</p>
-          <ul className='mt-2 list-disc pl-5 text-xs text-text-secondary'>
+        <div className="mt-4 rounded-xl border border-border bg-surface p-4 text-sm shadow-soft">
+          <p className="font-medium">Fotografías registradas</p>
+          <ul className="mt-2 list-disc pl-5 text-xs text-text-secondary">
             {data.photos.map((photo) => (
               <li key={photo.id}>
                 {photo.caption ?? photo.storage_path} ·{' '}
@@ -906,7 +939,7 @@ export default function ArregloDetalle() {
               </li>
             ))}
           </ul>
-          <p className='mt-2 text-xs text-text-secondary'>
+          <p className="mt-2 text-xs text-text-secondary">
             Las imágenes se almacenan en Supabase Storage; se requiere un bucket
             configurado para visualizarlas.
           </p>
@@ -916,7 +949,7 @@ export default function ArregloDetalle() {
       <Modal
         open={paymentTarget !== null}
         onClose={() => setPaymentTarget(null)}
-        title='Registrar pago'
+        title="Registrar pago"
         description={
           paymentTarget
             ? `Prenda ${paymentTarget.garment_number} · saldo ${formatCurrency(data.balances[paymentTarget.id] ?? 0)}`
@@ -924,7 +957,7 @@ export default function ArregloDetalle() {
         }
         footer={
           <>
-            <Button variant='outline' onClick={() => setPaymentTarget(null)}>
+            <Button variant="outline" onClick={() => setPaymentTarget(null)}>
               Cancelar
             </Button>
             <Button loading={working} onClick={submitPayment}>
@@ -933,16 +966,16 @@ export default function ArregloDetalle() {
           </>
         }
       >
-        <div className='flex flex-col gap-3'>
-          <Field label='Monto'>
+        <div className="flex flex-col gap-3">
+          <Field label="Monto">
             <Input
-              type='number'
+              type="number"
               min={0}
               value={paymentAmount}
               onChange={(event) => setPaymentAmount(event.target.value)}
             />
           </Field>
-          <Field label='Método'>
+          <Field label="Método">
             <Select
               value={paymentMethod}
               onChange={(event) =>
@@ -956,21 +989,21 @@ export default function ArregloDetalle() {
               ))}
             </Select>
           </Field>
-          <Field label='Referencia'>
+          <Field label="Referencia">
             <Input
               value={paymentReference}
               onChange={(event) => setPaymentReference(event.target.value)}
-              placeholder='Opcional'
+              placeholder="Opcional"
             />
           </Field>
           {paymentMethod === 'cash' && paymentChange > 0 ? (
-            <p className='text-xs font-medium text-success'>
+            <p className="text-xs font-medium text-success">
               Se registrará un pago de {formatCurrency(paymentApplied)} · Vuelto{' '}
               {formatCurrency(paymentChange)}
             </p>
           ) : null}
           {paymentMethod !== 'cash' && paymentTendered > paymentBalance ? (
-            <p className='text-xs text-danger'>
+            <p className="text-xs text-danger">
               El monto supera el saldo ({formatCurrency(paymentBalance)}).
             </p>
           ) : null}
@@ -980,11 +1013,11 @@ export default function ArregloDetalle() {
       <Modal
         open={materialTarget !== null}
         onClose={() => setMaterialTarget(null)}
-        title='Agregar material'
-        description='Se descuenta automáticamente del inventario.'
+        title="Agregar material"
+        description="Se descuenta automáticamente del inventario."
         footer={
           <>
-            <Button variant='outline' onClick={() => setMaterialTarget(null)}>
+            <Button variant="outline" onClick={() => setMaterialTarget(null)}>
               Cancelar
             </Button>
             <Button loading={working} onClick={submitMaterial}>
@@ -993,8 +1026,8 @@ export default function ArregloDetalle() {
           </>
         }
       >
-        <div className='flex flex-col gap-3'>
-          <Field label='Producto'>
+        <div className="flex flex-col gap-3">
+          <Field label="Producto">
             <Select
               value={materialProduct}
               onChange={(event) => {
@@ -1007,18 +1040,18 @@ export default function ArregloDetalle() {
                 )
               }}
             >
-              <option value=''>Seleccionar…</option>
+              <option value="">Seleccionar…</option>
               {products.map((product) => (
                 <option key={product.id} value={product.id}>
-                  {product.name} · stock {formatNumber(product.current_stock, 2)}{' '}
-                  {product.unit}
+                  {product.name} · stock{' '}
+                  {formatNumber(product.current_stock, 2)} {product.unit}
                 </option>
               ))}
             </Select>
           </Field>
-          <Field label='Cantidad'>
+          <Field label="Cantidad">
             <Input
-              type='text'
+              type="text"
               inputMode={
                 unitAllowsDecimals(materialUnit) ? 'decimal' : 'numeric'
               }
@@ -1033,7 +1066,7 @@ export default function ArregloDetalle() {
               }
             />
           </Field>
-          <Field label='Notas'>
+          <Field label="Notas">
             <Input
               value={materialNotes}
               onChange={(event) => setMaterialNotes(event.target.value)}
@@ -1045,12 +1078,12 @@ export default function ArregloDetalle() {
       <Modal
         open={servicesTarget !== null}
         onClose={() => setServicesTarget(null)}
-        title='Editar servicios'
-        description='El precio de la prenda se recalcula automáticamente.'
-        size='lg'
+        title="Editar servicios"
+        description="El precio de la prenda se recalcula automáticamente."
+        size="lg"
         footer={
           <>
-            <Button variant='outline' onClick={() => setServicesTarget(null)}>
+            <Button variant="outline" onClick={() => setServicesTarget(null)}>
               Cancelar
             </Button>
             <Button loading={working} onClick={submitServices}>
@@ -1059,19 +1092,18 @@ export default function ArregloDetalle() {
           </>
         }
       >
-        <div className='flex flex-col gap-2'>
+        <div className="flex flex-col gap-2">
           {serviceDrafts.map((draft) => (
             <div
               key={draft.key}
-              className='grid gap-2 rounded-lg border border-border p-2 sm:grid-cols-[1.5fr_1fr_1fr_1fr_auto]'
+              className="grid gap-2 rounded-lg border border-border p-2 sm:grid-cols-[1.5fr_1fr_1fr_1fr_auto]"
             >
-              <Field label='Catálogo'>
+              <Field label="Catálogo">
                 <Select
                   value={draft.serviceId}
                   onChange={(event) => {
-                    const selected: ServiceCatalogItem | undefined = catalog.find(
-                      (item) => item.id === event.target.value,
-                    )
+                    const selected: ServiceCatalogItem | undefined =
+                      catalog.find((item) => item.id === event.target.value)
                     setServiceDrafts((current) =>
                       current.map((item) =>
                         item.key === draft.key
@@ -1088,7 +1120,7 @@ export default function ArregloDetalle() {
                     )
                   }}
                 >
-                  <option value=''>Personalizado</option>
+                  <option value="">Personalizado</option>
                   {catalog.map((item) => (
                     <option key={item.id} value={item.id}>
                       {item.name}
@@ -1096,7 +1128,7 @@ export default function ArregloDetalle() {
                   ))}
                 </Select>
               </Field>
-              <Field label='Descripción'>
+              <Field label="Descripción">
                 <Input
                   value={draft.description}
                   disabled={Boolean(draft.serviceId)}
@@ -1111,10 +1143,10 @@ export default function ArregloDetalle() {
                   }
                 />
               </Field>
-              <Field label='Cantidad'>
+              <Field label="Cantidad">
                 <Input
-                  type='text'
-                  inputMode='decimal'
+                  type="text"
+                  inputMode="decimal"
                   value={draft.quantity}
                   onChange={(event) =>
                     setServiceDrafts((current) =>
@@ -1127,9 +1159,9 @@ export default function ArregloDetalle() {
                   }
                 />
               </Field>
-              <Field label='Precio'>
+              <Field label="Precio">
                 <Input
-                  type='number'
+                  type="number"
                   min={0}
                   value={draft.unitPrice}
                   onChange={(event) =>
@@ -1143,10 +1175,10 @@ export default function ArregloDetalle() {
                   }
                 />
               </Field>
-              <div className='flex items-end'>
+              <div className="flex items-end">
                 <Button
-                  variant='ghost'
-                  size='icon'
+                  variant="ghost"
+                  size="icon"
                   disabled={serviceDrafts.length === 1}
                   onClick={() =>
                     setServiceDrafts((current) =>
@@ -1154,15 +1186,15 @@ export default function ArregloDetalle() {
                     )
                   }
                 >
-                  <Trash2 className='h-4 w-4 text-danger' />
+                  <Trash2 className="h-4 w-4 text-danger" />
                 </Button>
               </div>
             </div>
           ))}
           <Button
-            variant='outline'
-            size='sm'
-            className='self-start'
+            variant="outline"
+            size="sm"
+            className="self-start"
             onClick={() =>
               setServiceDrafts((current) => [
                 ...current,
@@ -1176,7 +1208,7 @@ export default function ArregloDetalle() {
               ])
             }
           >
-            <Plus className='h-3.5 w-3.5' /> Servicio
+            <Plus className="h-3.5 w-3.5" /> Servicio
           </Button>
         </div>
       </Modal>
@@ -1184,16 +1216,16 @@ export default function ArregloDetalle() {
       <Modal
         open={deliverTarget !== null}
         onClose={() => setDeliverTarget(null)}
-        title='Entregar prenda'
+        title="Entregar prenda"
         description={
           deliverTarget
             ? `Prenda ${deliverTarget.garment_number} · ${deliverTarget.garment_type}`
             : undefined
         }
-        size='lg'
+        size="lg"
         footer={
           <>
-            <Button variant='outline' onClick={() => setDeliverTarget(null)}>
+            <Button variant="outline" onClick={() => setDeliverTarget(null)}>
               Cancelar
             </Button>
             <Button loading={delivering} onClick={submitDeliver}>
@@ -1203,33 +1235,33 @@ export default function ArregloDetalle() {
         }
       >
         {deliverTarget ? (
-          <div className='flex flex-col gap-3 text-sm'>
-            <div className='rounded-lg bg-muted/50 p-3'>
-              <p className='flex justify-between'>
+          <div className="flex flex-col gap-3 text-sm">
+            <div className="rounded-lg bg-muted/50 p-3">
+              <p className="flex justify-between">
                 <span>Precio del arreglo</span>
                 <span>{formatCurrency(deliverTarget.service_price)}</span>
               </p>
-              <p className='flex justify-between'>
+              <p className="flex justify-between">
                 <span>Pagado previamente</span>
                 <span>{formatCurrency(deliverPaid)}</span>
               </p>
-              <p className='flex justify-between'>
+              <p className="flex justify-between">
                 <span>
                   Guarda ({storagePreview?.daysOver ?? 0} día(s) sobre gracia)
                 </span>
                 <span>{formatCurrency(deliverFee)}</span>
               </p>
-              <p className='mt-1 flex justify-between border-t border-border pt-1 text-base font-semibold'>
+              <p className="mt-1 flex justify-between border-t border-border pt-1 text-base font-semibold">
                 <span>Saldo a cobrar</span>
                 <span>{formatCurrency(deliverDue)}</span>
               </p>
             </div>
 
             {isAdmin && (storagePreview?.fee ?? 0) > 0 ? (
-              <label className='flex items-center gap-2 text-xs'>
+              <label className="flex items-center gap-2 text-xs">
                 <input
-                  type='checkbox'
-                  className='h-4 w-4 accent-primary'
+                  type="checkbox"
+                  className="h-4 w-4 accent-primary"
                   checked={waiveFee}
                   onChange={(event) => setWaiveFee(event.target.checked)}
                 />
@@ -1244,8 +1276,9 @@ export default function ArregloDetalle() {
                 due={deliverDue}
               />
             ) : (
-              <p className='text-xs text-success'>
-                La prenda no tiene saldo pendiente; se entregará sin nuevo cobro.
+              <p className="text-xs text-success">
+                La prenda no tiene saldo pendiente; se entregará sin nuevo
+                cobro.
               </p>
             )}
           </div>
@@ -1255,12 +1288,12 @@ export default function ArregloDetalle() {
       <Modal
         open={bulkDeliverOpen}
         onClose={() => setBulkDeliverOpen(false)}
-        title='Entrega conjunta'
-        description='Cobra el saldo total y entrega varias prendas en una sola operación.'
-        size='lg'
+        title="Entrega conjunta"
+        description="Cobra el saldo total y entrega varias prendas en una sola operación."
+        size="lg"
         footer={
           <>
-            <Button variant='outline' onClick={() => setBulkDeliverOpen(false)}>
+            <Button variant="outline" onClick={() => setBulkDeliverOpen(false)}>
               Cancelar
             </Button>
             <Button
@@ -1274,38 +1307,38 @@ export default function ArregloDetalle() {
           </>
         }
       >
-        <div className='flex flex-col gap-3 text-sm'>
+        <div className="flex flex-col gap-3 text-sm">
           {bulkLoading ? (
-            <p className='text-xs text-text-secondary'>Calculando saldos…</p>
+            <p className="text-xs text-text-secondary">Calculando saldos…</p>
           ) : null}
 
-          <div className='flex flex-col gap-2'>
+          <div className="flex flex-col gap-2">
             {readyGarments.map((garment) => {
               const selected = bulkSelected.includes(garment.id)
               const preview = bulkPreviews[garment.id]
               return (
                 <label
                   key={garment.id}
-                  className='flex cursor-pointer items-center gap-3 rounded-lg border border-border bg-muted/30 p-2'
+                  className="flex cursor-pointer items-center gap-3 rounded-lg border border-border bg-muted/30 p-2"
                 >
                   <input
-                    type='checkbox'
-                    className='h-4 w-4 accent-primary'
+                    type="checkbox"
+                    className="h-4 w-4 accent-primary"
                     checked={selected}
                     disabled={bulkLoading}
                     onChange={() => toggleBulkGarment(garment.id)}
                   />
-                  <div className='flex-1'>
-                    <p className='font-medium'>
+                  <div className="flex-1">
+                    <p className="font-medium">
                       Prenda {garment.garment_number} · {garment.garment_type}
                     </p>
-                    <p className='text-xs text-text-secondary'>
+                    <p className="text-xs text-text-secondary">
                       Servicio {formatCurrency(garment.service_price)} · Pagado{' '}
                       {formatCurrency(paidFor(garment.id))} · Guarda{' '}
                       {preview ? formatCurrency(preview.fee) : '…'}
                     </p>
                   </div>
-                  <span className='shrink-0 font-medium'>
+                  <span className="shrink-0 font-medium">
                     {formatCurrency(dueFor(garment, bulkWaiveFee))}
                   </span>
                 </label>
@@ -1314,11 +1347,13 @@ export default function ArregloDetalle() {
           </div>
 
           {isAdmin &&
-          bulkGarments.some((garment) => (bulkPreviews[garment.id]?.fee ?? 0) > 0) ? (
-            <label className='flex items-center gap-2 text-xs'>
+          bulkGarments.some(
+            (garment) => (bulkPreviews[garment.id]?.fee ?? 0) > 0,
+          ) ? (
+            <label className="flex items-center gap-2 text-xs">
               <input
-                type='checkbox'
-                className='h-4 w-4 accent-primary'
+                type="checkbox"
+                className="h-4 w-4 accent-primary"
                 checked={bulkWaiveFee}
                 onChange={(event) => toggleBulkWaive(event.target.checked)}
               />
@@ -1326,7 +1361,7 @@ export default function ArregloDetalle() {
             </label>
           ) : null}
 
-          <div className='flex justify-between rounded-lg bg-muted/50 p-3 text-base font-semibold'>
+          <div className="flex justify-between rounded-lg bg-muted/50 p-3 text-base font-semibold">
             <span>Saldo a cobrar</span>
             <span>{formatCurrency(bulkDue)}</span>
           </div>
@@ -1338,7 +1373,7 @@ export default function ArregloDetalle() {
               due={bulkDue}
             />
           ) : (
-            <p className='text-xs text-success'>
+            <p className="text-xs text-success">
               Las prendas no tienen saldo pendiente; se entregarán sin nuevo
               cobro.
             </p>
@@ -1349,21 +1384,21 @@ export default function ArregloDetalle() {
       <Modal
         open={cancelTarget !== null}
         onClose={() => setCancelTarget(null)}
-        title='Cancelar prenda'
-        description='Si hay pagos, se registrará un reembolso.'
+        title="Cancelar prenda"
+        description="Si hay pagos, se registrará un reembolso."
         footer={
           <>
-            <Button variant='outline' onClick={() => setCancelTarget(null)}>
+            <Button variant="outline" onClick={() => setCancelTarget(null)}>
               Volver
             </Button>
-            <Button variant='danger' loading={working} onClick={submitCancel}>
+            <Button variant="danger" loading={working} onClick={submitCancel}>
               Cancelar prenda
             </Button>
           </>
         }
       >
-        <div className='flex flex-col gap-3'>
-          <Field label='Motivo' hint='Obligatorio'>
+        <div className="flex flex-col gap-3">
+          <Field label="Motivo" hint="Obligatorio">
             <Textarea
               value={cancelReason}
               onChange={(event) => setCancelReason(event.target.value)}
@@ -1371,7 +1406,7 @@ export default function ArregloDetalle() {
           </Field>
           {cancelTarget && paidFor(cancelTarget.id) > 0 ? (
             <Field
-              label='Método de reembolso'
+              label="Método de reembolso"
               hint={`Pagado: ${formatCurrency(paidFor(cancelTarget.id))}`}
             >
               <Select
@@ -1394,10 +1429,10 @@ export default function ArregloDetalle() {
       <Modal
         open={notifyTarget !== null}
         onClose={() => setNotifyTarget(null)}
-        title='Registrar aviso'
+        title="Registrar aviso"
         footer={
           <>
-            <Button variant='outline' onClick={() => setNotifyTarget(null)}>
+            <Button variant="outline" onClick={() => setNotifyTarget(null)}>
               Cancelar
             </Button>
             <Button loading={working} onClick={submitNotify}>
@@ -1406,34 +1441,38 @@ export default function ArregloDetalle() {
           </>
         }
       >
-        <div className='flex flex-col gap-3'>
-          <Field label='Medio'>
+        <div className="flex flex-col gap-3">
+          <Field label="Medio">
             <Select
               value={notifyMethod}
               onChange={(event) =>
                 setNotifyMethod(event.target.value as typeof notifyMethod)
               }
             >
-              {Object.entries(NOTIFICATION_METHOD_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
+              {Object.entries(NOTIFICATION_METHOD_LABELS).map(
+                ([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ),
+              )}
             </Select>
           </Field>
-          <Field label='Resultado'>
+          <Field label="Resultado">
             <Select
               value={notifyResult}
               onChange={(event) => setNotifyResult(event.target.value)}
             >
-              {Object.entries(NOTIFICATION_RESULT_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
+              {Object.entries(NOTIFICATION_RESULT_LABELS).map(
+                ([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ),
+              )}
             </Select>
           </Field>
-          <Field label='Notas'>
+          <Field label="Notas">
             <Textarea
               value={notifyNotes}
               onChange={(event) => setNotifyNotes(event.target.value)}
@@ -1445,20 +1484,20 @@ export default function ArregloDetalle() {
       <Modal
         open={voidTarget !== null}
         onClose={() => setVoidTarget(null)}
-        title='Anular material'
-        description='Se devuelve el stock y se conserva el historial.'
+        title="Anular material"
+        description="Se devuelve el stock y se conserva el historial."
         footer={
           <>
-            <Button variant='outline' onClick={() => setVoidTarget(null)}>
+            <Button variant="outline" onClick={() => setVoidTarget(null)}>
               Volver
             </Button>
-            <Button variant='danger' loading={working} onClick={submitVoid}>
+            <Button variant="danger" loading={working} onClick={submitVoid}>
               Anular material
             </Button>
           </>
         }
       >
-        <Field label='Motivo' hint='Obligatorio'>
+        <Field label="Motivo" hint="Obligatorio">
           <Textarea
             value={voidReason}
             onChange={(event) => setVoidReason(event.target.value)}
@@ -1466,7 +1505,7 @@ export default function ArregloDetalle() {
         </Field>
       </Modal>
 
-      <p className='mt-4 text-xs text-text-secondary'>
+      <p className="mt-4 text-xs text-text-secondary">
         Estados posibles: {Object.values(GARMENT_STATUS_LABELS).join(' · ')}
       </p>
     </div>

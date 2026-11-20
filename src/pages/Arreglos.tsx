@@ -205,7 +205,7 @@ export default function Arreglos() {
                       (garment) => garment.status === 'ready',
                     ).length
                     return (
-                      <tr key={order.id} className='hover:bg-muted/40'>
+                      <tr key={order.id} className='hover:bg-muted/40 cursor-pointer' onClick={()=>navigate(`/arreglos/${order.id}`)}>
                         <Td className='font-medium'>#{order.order_number}</Td>
                         <Td>{order.customers?.full_name ?? 'Cliente'}</Td>
                         <Td>{formatDate(order.received_at)}</Td>
