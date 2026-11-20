@@ -5,7 +5,7 @@ import { createCustomer } from '@/services/customers'
 import { createRepairOrder } from '@/services/repairs'
 import type { Customer, ServiceCatalogItem } from '@/types'
 import { PAYMENT_METHODS, type PaymentMethod } from '@/types'
-import { formatCurrency, PAYMENT_METHOD_LABELS } from '@/lib/format'
+import { formatCurrency, parseDecimal, PAYMENT_METHOD_LABELS } from '@/lib/format'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Field, Input, Select, Textarea } from '@/components/ui/Input'
@@ -118,7 +118,7 @@ export function NewOrderModal({
   function serviceLineTotal(service: ServiceDraft) {
     const catalog = services.find((item) => item.id === service.serviceId)
     const price = service.unitPrice !== '' ? Number(service.unitPrice) : catalog?.default_price ?? 0
-    return (Number(service.quantity) || 0) * (price || 0)
+    return parseDecimal(service.quantity) * (price || 0)
   }
 
   const orderTotal = garments.reduce(
@@ -180,7 +180,7 @@ export function NewOrderModal({
       const validServices = garment.services.filter(
         (service) =>
           (service.serviceId || service.description.trim()) &&
-          Number(service.quantity) > 0,
+          parseDecimal(service.quantity) > 0,
       )
       if (validServices.length === 0) {
         toast.error(`Prenda ${index + 1}: agrega al menos un servicio`)
@@ -219,7 +219,7 @@ export function NewOrderModal({
             .map((service) => ({
               service_id: service.serviceId || null,
               description: service.serviceId ? null : service.description.trim(),
-              quantity: Number(service.quantity) || 1,
+              quantity: parseDecimal(service.quantity) || 1,
               unit_price: service.unitPrice !== '' ? Number(service.unitPrice) : undefined,
             })),
         })),
@@ -484,9 +484,8 @@ export function NewOrderModal({
                       </Field>
                       <Field label='Cantidad'>
                         <Input
-                          type='number'
-                          min={0}
-                          step='any'
+                          type='text'
+                          inputMode='decimal'
                           value={service.quantity}
                           onChange={(event) =>
                             updateService(garment.key, service.key, {

@@ -11,6 +11,9 @@ import {
   formatCurrency,
   formatDateTime,
   formatNumber,
+  parseDecimal,
+  sanitizeQuantity,
+  unitAllowsDecimals,
   PAYMENT_METHOD_LABELS,
 } from '@/lib/format'
 import { Button } from '@/components/ui/Button'
@@ -27,7 +30,7 @@ interface CartLine {
   name: string
   unit: string
   stock: number
-  quantity: number
+  quantity: string
   unitPrice: number
   discount: number
 }
@@ -71,7 +74,7 @@ export default function Ventas() {
 
   const subtotal = cart.reduce(
     (total, line) =>
-      total + Math.max(line.quantity * line.unitPrice - line.discount, 0),
+      total + Math.max(parseDecimal(line.quantity) * line.unitPrice - line.discount, 0),
     0,
   )
   const total = Math.max(Math.round(subtotal - (globalDiscount || 0)), 0)
@@ -102,7 +105,7 @@ export default function Ventas() {
       if (existing) {
         return current.map((line) =>
           line.productId === product.id
-            ? { ...line, quantity: line.quantity + 1 }
+            ? { ...line, quantity: String(parseDecimal(line.quantity) + 1) }
             : line,
         )
       }
@@ -113,7 +116,7 @@ export default function Ventas() {
           name: product.name,
           unit: product.unit,
           stock: Number(product.current_stock),
-          quantity: 1,
+          quantity: '1',
           unitPrice: Number(product.sale_price),
           discount: 0,
         },
@@ -169,7 +172,7 @@ export default function Ventas() {
       const saleId = await createSale({
         items: cart.map((line) => ({
           product_id: line.productId,
-          quantity: line.quantity,
+          quantity: parseDecimal(line.quantity),
           unit_price: line.unitPrice,
           discount_amount: line.discount,
         })),
@@ -318,7 +321,7 @@ export default function Ventas() {
                       <tr key={line.productId}>
                         <Td>
                           <span className='text-sm'>{line.name}</span>
-                          {line.quantity > line.stock ? (
+                          {parseDecimal(line.quantity) > line.stock ? (
                             <span className='block text-[11px] text-danger'>
                               Supera stock ({formatNumber(line.stock, 2)})
                             </span>
@@ -332,20 +335,29 @@ export default function Ventas() {
                               className='h-7 w-7'
                               onClick={() =>
                                 updateLine(line.productId, {
-                                  quantity: Math.max(line.quantity - 1, 0.01),
+                                  quantity: String(
+                                    Math.max(
+                                      parseDecimal(line.quantity) - 1,
+                                      unitAllowsDecimals(line.unit) ? 0.01 : 1,
+                                    ),
+                                  ),
                                 })
                               }
                             >
                               <Minus className='h-3 w-3' />
                             </Button>
                             <Input
-                              type='number'
-                              min={0.01}
-                              step='any'
+                              type='text'
+                              inputMode={
+                                unitAllowsDecimals(line.unit) ? 'decimal' : 'numeric'
+                              }
                               value={line.quantity}
                               onChange={(event) =>
                                 updateLine(line.productId, {
-                                  quantity: Number(event.target.value) || 0,
+                                  quantity: sanitizeQuantity(
+                                    event.target.value,
+                                    unitAllowsDecimals(line.unit),
+                                  ),
                                 })
                               }
                               className='h-8 w-16 px-1 text-center'
@@ -356,12 +368,15 @@ export default function Ventas() {
                               className='h-7 w-7'
                               onClick={() =>
                                 updateLine(line.productId, {
-                                  quantity: line.quantity + 1,
+                                  quantity: String(parseDecimal(line.quantity) + 1),
                                 })
                               }
                             >
                               <Plus className='h-3 w-3' />
                             </Button>
+                            <span className='whitespace-nowrap text-xs text-text-secondary'>
+                              {line.unit}
+                            </span>
                           </div>
                         </Td>
                         <Td>
@@ -394,7 +409,10 @@ export default function Ventas() {
                         </Td>
                         <Td className='whitespace-nowrap font-medium'>
                           {formatCurrency(
-                            Math.max(line.quantity * line.unitPrice - line.discount, 0),
+                            Math.max(
+                              parseDecimal(line.quantity) * line.unitPrice - line.discount,
+                              0,
+                            ),
                           )}
                         </Td>
                         <Td>

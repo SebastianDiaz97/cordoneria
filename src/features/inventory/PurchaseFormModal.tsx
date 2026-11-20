@@ -3,7 +3,12 @@ import { Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { receivePurchase } from '@/services/inventory'
 import type { Product, Supplier } from '@/types'
-import { formatCurrency } from '@/lib/format'
+import {
+  formatCurrency,
+  parseDecimal,
+  sanitizeQuantity,
+  unitAllowsDecimals,
+} from '@/lib/format'
 import { Button } from '@/components/ui/Button'
 import { Field, Input, Select, Textarea } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
@@ -54,7 +59,7 @@ export function PurchaseFormModal({
   const subtotal = useMemo(
     () =>
       lines.reduce((total, line) => {
-        const qty = Number(line.quantity) || 0
+        const qty = parseDecimal(line.quantity)
         const cost = Number(line.unitCost) || 0
         const disc = Number(line.discount) || 0
         return total + Math.max(qty * cost - disc, 0)
@@ -73,7 +78,7 @@ export function PurchaseFormModal({
     const validLines = lines.filter(
       (line) =>
         line.productId &&
-        Number(line.quantity) > 0 &&
+        parseDecimal(line.quantity) > 0 &&
         Number(line.unitCost) >= 0,
     )
     if (validLines.length === 0) {
@@ -85,7 +90,7 @@ export function PurchaseFormModal({
       await receivePurchase({
         items: validLines.map((line) => ({
           product_id: line.productId,
-          quantity: Number(line.quantity),
+          quantity: parseDecimal(line.quantity),
           unit_cost: Number(line.unitCost),
           discount_amount: Number(line.discount) || 0,
         })),
@@ -170,6 +175,12 @@ export function PurchaseFormModal({
                         unitCost: selected
                           ? String(selected.cost_price)
                           : line.unitCost,
+                        quantity: selected
+                          ? sanitizeQuantity(
+                              line.quantity,
+                              unitAllowsDecimals(selected.unit),
+                            )
+                          : line.quantity,
                       })
                     }}
                   >
@@ -184,12 +195,18 @@ export function PurchaseFormModal({
                 </Field>
                 <Field label='Cantidad'>
                   <Input
-                    type='number'
-                    min={0}
-                    step='any'
+                    type='text'
+                    inputMode={
+                      unitAllowsDecimals(product?.unit) ? 'decimal' : 'numeric'
+                    }
                     value={line.quantity}
                     onChange={(event) =>
-                      updateLine(line.key, { quantity: event.target.value })
+                      updateLine(line.key, {
+                        quantity: sanitizeQuantity(
+                          event.target.value,
+                          unitAllowsDecimals(product?.unit),
+                        ),
+                      })
                     }
                   />
                 </Field>

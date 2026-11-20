@@ -36,6 +36,9 @@ import {
   NOTIFICATION_RESULT_LABELS,
   ORDER_STATUS_LABELS,
   PAYMENT_METHOD_LABELS,
+  parseDecimal,
+  sanitizeQuantity,
+  unitAllowsDecimals,
 } from '@/lib/format'
 import { appliedTenderAmounts, summarizeTender } from '@/lib/payments'
 import { PageHeader } from '@/components/ui/Card'
@@ -275,6 +278,9 @@ export default function ArregloDetalle() {
 
   const products = productsQuery.data ?? []
   const catalog = servicesQuery.data ?? []
+  const materialUnit = products.find(
+    (product) => product.id === materialProduct,
+  )?.unit
 
   const paymentsByGarment = useMemo(() => {
     const map = new Map<string, Payment[]>()
@@ -376,7 +382,7 @@ export default function ArregloDetalle() {
       await addRepairMaterial({
         garmentId: materialTarget.id,
         productId: materialProduct,
-        quantity: Number(materialQuantity),
+        quantity: parseDecimal(materialQuantity),
         notes: materialNotes.trim() || null,
       })
       toast.success('Material registrado y stock descontado')
@@ -410,7 +416,7 @@ export default function ArregloDetalle() {
     const valid = serviceDrafts.filter(
       (draft) =>
         (draft.serviceId || draft.description.trim()) &&
-        Number(draft.quantity) > 0,
+        parseDecimal(draft.quantity) > 0,
     )
     if (valid.length === 0) {
       toast.error('Agrega al menos un servicio')
@@ -423,7 +429,7 @@ export default function ArregloDetalle() {
         valid.map((draft) => ({
           service_id: draft.serviceId || null,
           description: draft.serviceId ? null : draft.description.trim(),
-          quantity: Number(draft.quantity),
+          quantity: parseDecimal(draft.quantity),
           unit_price: Number(draft.unitPrice) || 0,
         })),
       )
@@ -991,7 +997,15 @@ export default function ArregloDetalle() {
           <Field label='Producto'>
             <Select
               value={materialProduct}
-              onChange={(event) => setMaterialProduct(event.target.value)}
+              onChange={(event) => {
+                const selected = products.find(
+                  (product) => product.id === event.target.value,
+                )
+                setMaterialProduct(event.target.value)
+                setMaterialQuantity((current) =>
+                  sanitizeQuantity(current, unitAllowsDecimals(selected?.unit)),
+                )
+              }}
             >
               <option value=''>Seleccionar…</option>
               {products.map((product) => (
@@ -1004,11 +1018,19 @@ export default function ArregloDetalle() {
           </Field>
           <Field label='Cantidad'>
             <Input
-              type='number'
-              min={0}
-              step='any'
+              type='text'
+              inputMode={
+                unitAllowsDecimals(materialUnit) ? 'decimal' : 'numeric'
+              }
               value={materialQuantity}
-              onChange={(event) => setMaterialQuantity(event.target.value)}
+              onChange={(event) =>
+                setMaterialQuantity(
+                  sanitizeQuantity(
+                    event.target.value,
+                    unitAllowsDecimals(materialUnit),
+                  ),
+                )
+              }
             />
           </Field>
           <Field label='Notas'>
@@ -1091,9 +1113,8 @@ export default function ArregloDetalle() {
               </Field>
               <Field label='Cantidad'>
                 <Input
-                  type='number'
-                  min={0}
-                  step='any'
+                  type='text'
+                  inputMode='decimal'
                   value={draft.quantity}
                   onChange={(event) =>
                     setServiceDrafts((current) =>

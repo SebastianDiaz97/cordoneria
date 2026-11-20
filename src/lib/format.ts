@@ -17,6 +17,43 @@ export function formatNumber(value: number | null | undefined, digits = 0) {
   }).format(Number.isFinite(amount) ? amount : 0)
 }
 
+export function parseDecimal(value: string | number | null | undefined) {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0
+  if (!value) return 0
+  const normalized = value.trim().replace(/\s/g, '').replace(/,/g, '.')
+  const amount = Number(normalized)
+  return Number.isFinite(amount) ? amount : 0
+}
+
+const FRACTIONAL_UNITS = new Set(['cm', 'metro', 'kg', 'g', 'litro'])
+
+/** Unidades que se venden por medida o peso, donde tiene sentido fraccionar. */
+export function unitAllowsDecimals(unit: string | null | undefined) {
+  if (!unit) return true
+  return FRACTIONAL_UNITS.has(unit)
+}
+
+/**
+ * Limpia lo que se escribe en un campo de cantidad: deja solo números,
+ * un separador decimal y un signo negativo inicial. Si la unidad no admite
+ * decimales, corta en el separador para quedarse con el entero.
+ */
+export function sanitizeQuantity(value: string, allowDecimals: boolean) {
+  const compact = value.replace(/\s/g, '')
+  if (!allowDecimals) {
+    return (compact.split(/[.,]/)[0] ?? '')
+      .replace(/[^0-9-]/g, '')
+      .replace(/(?!^)-/g, '')
+  }
+  const cleaned = compact.replace(/[^0-9.,-]/g, '').replace(/(?!^)-/g, '')
+  const separator = cleaned.search(/[.,]/)
+  if (separator === -1) return cleaned
+  return (
+    cleaned.slice(0, separator + 1) +
+    cleaned.slice(separator + 1).replace(/[.,]/g, '')
+  )
+}
+
 export function formatDateTime(value: string | null | undefined) {
   if (!value) return '—'
   try {

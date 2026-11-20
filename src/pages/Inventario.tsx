@@ -28,6 +28,9 @@ import {
   formatDateTime,
   formatNumber,
   MOVEMENT_TYPE_LABELS,
+  parseDecimal,
+  sanitizeQuantity,
+  unitAllowsDecimals,
 } from '@/lib/format'
 import { PageHeader } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
@@ -123,7 +126,9 @@ export default function Inventario() {
 
   async function saveAdjustment() {
     if (!adjustTarget) return
-    const delta = Number(adjustDelta)
+    const delta = unitAllowsDecimals(adjustTarget.unit)
+      ? parseDecimal(adjustDelta)
+      : Math.trunc(parseDecimal(adjustDelta))
     if (!delta || Number.isNaN(delta)) {
       toast.error('Ingresa una cantidad distinta de 0')
       return
@@ -575,11 +580,24 @@ export default function Inventario() {
             </p>
             <Field label='Cantidad (+/-)'>
               <Input
-                type='number'
-                step='any'
+                type='text'
+                inputMode={
+                  unitAllowsDecimals(adjustTarget.unit) ? 'decimal' : 'numeric'
+                }
                 value={adjustDelta}
-                onChange={(event) => setAdjustDelta(event.target.value)}
-                placeholder='Ej: 10 o -2.5'
+                onChange={(event) =>
+                  setAdjustDelta(
+                    sanitizeQuantity(
+                      event.target.value,
+                      unitAllowsDecimals(adjustTarget.unit),
+                    ),
+                  )
+                }
+                placeholder={
+                  unitAllowsDecimals(adjustTarget.unit)
+                    ? 'Ej: 10 o -2,5'
+                    : 'Ej: 10 o -2'
+                }
               />
             </Field>
             <Field label='Motivo' hint='Obligatorio'>

@@ -3,6 +3,11 @@ import { toast } from 'sonner'
 import { createProduct, updateProduct, type ProductInput } from '@/services/catalog'
 import type { Category, Product, Supplier } from '@/types'
 import { PRODUCT_UNITS } from '@/types'
+import {
+  parseDecimal,
+  sanitizeQuantity,
+  unitAllowsDecimals,
+} from '@/lib/format'
 import { Button } from '@/components/ui/Button'
 import { Field, Input, Select, Textarea } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
@@ -79,7 +84,7 @@ export function ProductFormModal({
       unit: form.unit,
       cost_price: Number(form.cost_price) || 0,
       sale_price: Number(form.sale_price) || 0,
-      minimum_stock: Number(form.minimum_stock) || 0,
+      minimum_stock: parseDecimal(form.minimum_stock),
       is_active: form.is_active,
     }
     setSaving(true)
@@ -155,7 +160,20 @@ export function ProductFormModal({
           </Select>
         </Field>
         <Field label='Unidad'>
-          <Select value={form.unit} onChange={(event) => set('unit', event.target.value)}>
+          <Select
+            value={form.unit}
+            onChange={(event) => {
+              const unit = event.target.value
+              setForm((current) => ({
+                ...current,
+                unit,
+                minimum_stock: sanitizeQuantity(
+                  current.minimum_stock,
+                  unitAllowsDecimals(unit),
+                ),
+              }))
+            }}
+          >
             {PRODUCT_UNITS.map((unit) => (
               <option key={unit} value={unit}>
                 {unit}
@@ -165,11 +183,18 @@ export function ProductFormModal({
         </Field>
         <Field label='Stock mínimo'>
           <Input
-            type='number'
-            min={0}
-            step='any'
+            type='text'
+            inputMode={unitAllowsDecimals(form.unit) ? 'decimal' : 'numeric'}
             value={form.minimum_stock}
-            onChange={(event) => set('minimum_stock', event.target.value)}
+            onChange={(event) =>
+              set(
+                'minimum_stock',
+                sanitizeQuantity(
+                  event.target.value,
+                  unitAllowsDecimals(form.unit),
+                ),
+              )
+            }
           />
         </Field>
         <Field label='Costo'>
