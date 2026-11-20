@@ -36,8 +36,9 @@ stock y cobros delegadas en funciones RPC de PostgreSQL.
 
 ### Ventas
 
-- Buscador de productos, carrito con cantidades, precio editable y descuento
-  por línea, descuento general y observaciones.
+- Buscador de productos, carrito con cantidades —con la unidad del producto
+  siempre visible junto al campo—, precio editable y descuento por línea,
+  descuento general y observaciones.
 - Cliente opcional y pagos divididos entre varios métodos.
 - En efectivo se puede ingresar un monto mayor al total: la venta registra solo
   el monto aplicado y muestra el **vuelto**. Los demás métodos no pueden
@@ -100,6 +101,9 @@ stock y cobros delegadas en funciones RPC de PostgreSQL.
 ## Reglas de negocio importantes
 
 - Los importes se guardan como `NUMERIC`; la moneda por defecto es CLP.
+- Las cantidades aceptan coma o punto como separador decimal (`2,5` o `2.5`).
+  Solo las unidades de medida (`cm`, `metro`, `kg`, `g`, `litro`) admiten
+  decimales; el resto de las unidades se registra con enteros.
 - Los pagos se registran siempre por el monto aplicado al saldo. El vuelto de
   efectivo es solo visual: no se almacena ni se imprime en el comprobante.
 - Un pago no puede superar el saldo de la prenda ni el total de una venta
